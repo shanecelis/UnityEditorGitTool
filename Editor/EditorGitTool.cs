@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.IO;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -57,7 +58,7 @@ namespace kamgam.editor.GitTool
                     EditorGUILayout.HelpBox("Should a warning be shown before building if there are uncommitted changes?", MessageType.None);
                     EditorGUILayout.PropertyField(settings.FindProperty("GitHashTextAssetPath"), new GUIContent("Hash file path:"));
                     EditorGUILayout.HelpBox("Defines the path where the hash is stored as a text asset file.\n"+
-                        "If you want to load this at runtime then store it in Resources, example: 'Assets/Resources/GitHash.asset'.\n"+
+                        "If you want to load this at runtime then store it in Resources, example: 'Resources/GitHash.txt'.\n"+
                         "\nLoad with :\n" +
                         "  var gitHash = UnityEngine.Resources.Load<TextAsset>(\"GitHash\"); \n"+
                         "  if (gitHash != null)\n"+
@@ -82,7 +83,7 @@ namespace kamgam.editor.GitTool
     /// </summary>
     public static class EditorGitTool
     {
-        public const string DefaultGitHashFilePath = "Assets/Resources/GitHash.asset";
+        public const string DefaultGitHashFilePath = "Resources/GitHash.txt";
 
 #if !UNITY_2018_4_OR_NEWER
         private static bool prefsLoaded = false;
@@ -146,10 +147,13 @@ namespace kamgam.editor.GitTool
 
             Debug.Log("GitTools: git hash is '" + gitHash + "'");
 
-            AssetDatabase.DeleteAsset(gitHashFilePath);
-            var text = new TextAsset(gitHash + postFix);
-            AssetDatabase.CreateAsset(text, gitHashFilePath);
-            AssetDatabase.SaveAssets();
+            // Won't this mess up the meta data?
+            // AssetDatabase.DeleteAsset(gitHashFilePath);
+            // var text = new TextAsset(gitHash + postFix);
+            // AssetDatabase.CreateAsset(text, gitHashFilePath);
+            File.WriteAllText(Path.Combine(Application.dataPath,
+                                           gitHashFilePath),
+                              gitHash);
             AssetDatabase.Refresh();
         }
 
