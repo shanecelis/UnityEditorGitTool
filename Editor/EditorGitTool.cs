@@ -117,7 +117,11 @@ namespace kamgam.editor.GitTool
         [MenuItem("Tools/Git/SaveHash")]
         public static void SaveHashFromMenu()
         {
-            SaveHash();
+
+            int commitsPending = EditorGitTool.CountChanges();
+            // Export git hash to text asset for runtime use.
+            // Add a "+" to the hash to indicate that this was built without commiting pending changes.
+            SaveHash(commitsPending > 0 ? "+" + commitsPending : "");
         }
 
         /// <summary>
@@ -144,6 +148,7 @@ namespace kamgam.editor.GitTool
                 Debug.LogError("GitTools: not git hash found!");
                 gitHash = "unknown";
             }
+            gitHash += postFix;
 
             Debug.Log("GitTools: git hash is '" + gitHash + "'");
 
