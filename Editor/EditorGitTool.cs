@@ -198,7 +198,7 @@ namespace kamgam.editor.GitTool
             count++;
             return count;
         }
-		
+
         public static string ExecAndReadFirstLine(string command, int maxWaitTimeInSec = 5)
         {
             string result = Exec(command, maxWaitTimeInSec);
@@ -224,7 +224,7 @@ namespace kamgam.editor.GitTool
                 string shellCmd = "cmd.exe";
                 string shellCmdArg = "/c";
 #elif UNITY_EDITOR_OSX
-			    string shellCmd = "bash";
+                string shellCmd = "bash";
                 string shellCmdArg = "-c";
 #endif
 
