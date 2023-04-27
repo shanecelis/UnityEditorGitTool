@@ -159,6 +159,11 @@ namespace kamgam.editor.GitTool
             File.WriteAllText(Path.Combine(Application.dataPath,
                                            gitHashFilePath),
                               gitHash);
+
+            // TODO: This cd ../.. should not be hardcoded at all.
+            Exec("cd ../.. && dotnet gitversion /output file /outputfile "
+                + Path.Combine(Application.dataPath,
+                    "Resources/GitVersion.json"));
             AssetDatabase.Refresh();
         }
 
@@ -232,6 +237,7 @@ namespace kamgam.editor.GitTool
                 Debug.Log("GitTool.Exec: Attempting to execute command: " + (shellCmd + " " + cmdArguments));
                 var procStartInfo = new System.Diagnostics.ProcessStartInfo(shellCmd, cmdArguments);
                 procStartInfo.RedirectStandardOutput = true;
+                procStartInfo.RedirectStandardError = true;
                 procStartInfo.UseShellExecute = false;
                 procStartInfo.CreateNoWindow = true;
 
@@ -242,7 +248,12 @@ namespace kamgam.editor.GitTool
                 proc.WaitForExit(maxWaitTimeInSec * 1000);
                 string result = proc.StandardOutput.ReadToEnd();
 
-                Debug.Log("GitTool.Exec: done");
+                Debug.Log("GitTool.Exec: done. Exit code " + proc.ExitCode);
+                if (proc.ExitCode != 0)
+                {
+                    string error = proc.StandardError.ReadToEnd();
+                    Debug.LogWarning("GitTool.stderr: " + error);
+                }
                 return result;
             }
             catch (System.Exception e)
