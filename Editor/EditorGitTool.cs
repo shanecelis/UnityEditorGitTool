@@ -182,12 +182,16 @@ namespace kamgam.editor.GitTool
                 return 0;
             int index = -1;
             int count = 0;
-            while ( (index = str.IndexOf(Environment.NewLine, index + 1)) != -1 )
+            // It would seem like searching for Environment.NewLine would be
+            // best; however, on Windows my git was not producing \r\n but \n
+            // and in this case counting newlines will work on both platforms.
+            while ( (index = str.IndexOf('\n', index + 1)) != -1 )
             {
                 count++;
             }
 
-            return count + 1;
+            count++;
+            return count;
         }
 		
         public static string ExecAndReadFirstLine(string command, int maxWaitTimeInSec = 5)
