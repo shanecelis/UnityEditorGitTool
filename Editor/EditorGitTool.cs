@@ -260,10 +260,9 @@ namespace kamgam.editor.GitTool
             bool showWarning = EditorGitTool.ShowWarning;
 #endif
 
-            bool commitsPending = false;
-            if(EditorGitTool.CountChanges() > 0 && showWarning)
+            bool commitsPending = EditorGitTool.CountChanges() > 0;
+            if(commitsPending && showWarning)
             {
-                commitsPending = true;
                 var continueWithoutCommit = EditorUtility.DisplayDialog(
                     "GIT: Commit your changes!",
                     "There are still uncommitted changes.\nDo you want to proceed with the build?",
