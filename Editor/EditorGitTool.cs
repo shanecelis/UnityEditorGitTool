@@ -38,6 +38,10 @@ namespace kamgam.editor.GitTool
             {
                 settings = ScriptableObject.CreateInstance<GitToolSettings>();
                 settings.GitHashTextAssetPath = EditorGitTool.DefaultGitHashFilePath;
+#if USE_GITVERSION
+                settings.GitVersionJsonAssetPath = EditorGitTool.DefaultGitVersionJsonAssetPath;
+                settings.GitVersionConfigPath = EditorGitTool.DefaultGitVersionConfigPath;
+#endif
                 settings.ShowWarning = false;
                 AssetDatabase.CreateAsset(settings, SettingsFilePath);
                 AssetDatabase.SaveAssets();
@@ -100,8 +104,8 @@ namespace kamgam.editor.GitTool
 #if USE_GITVERSION
         public const string DefaultGitVersionJsonAssetPath = "Resources/GitVersion.json";
         public const string DefaultGitVersionConfigPath = "GitVersion.yml";
-        public static bool ShowWarning = false;
 #endif
+        public static bool ShowWarning = false;
 
 #if !UNITY_2018_4_OR_NEWER
         private static bool prefsLoaded = false;
@@ -118,6 +122,10 @@ namespace kamgam.editor.GitTool
             {
                 GitHashFilePath = EditorPrefs.GetString("kamgam.EditorGitTools.DefaultGitHashFilePath", GitHashFilePath);
                 ShowWarning = EditorPrefs.GetBool("kamgam.EditorGitTools.ShowWarning", ShowWarning);
+#if USE_GITVERSION
+                GitVersionJsonAssetPath = EditorPrefs.GetString("kamgam.EditorGitTools.DefaultGitVersionJsonAssetPath", GitVersionJsonAssetPath);
+                GitVersionConfigPath = EditorPrefs.GetString("kamgam.EditorGitTools.DefaultGitVersionConfigPath", GitVersionConfigPath);
+#endif
                 prefsLoaded = true;
             }
 
@@ -131,6 +139,10 @@ namespace kamgam.editor.GitTool
             if (GUI.changed)
             {
                 EditorPrefs.SetString("kamgam.EditorGitTools.DefaultGitHashFilePath", GitHashFilePath);
+#if USE_GITVERSION
+                EditorPrefs.SetString("kamgam.EditorGitTools.DefaultGitVersionConfigPath", GitVersionConfigPath);
+                EditorPrefs.SetString("kamgam.EditorGitTools.DefaultGitVersionJsonAssetPath", GitVersionJsonAssetPath);
+#endif
                 EditorPrefs.SetBool("kamgam.EditorGitTools.ShowWarning", ShowWarning);
             }
         }
@@ -185,6 +197,10 @@ namespace kamgam.editor.GitTool
                                            gitHashFilePath),
                               gitHash);
 #if USE_GITVERSION
+            string gitVersionJsonAssetPath
+                = GitToolSettings
+                .GetOrCreateSettings()
+                .GitVersionJsonAssetPath;
             Exec("gitversion /output file /outputfile "
                 + Path.Combine(Application.dataPath,
                     gitVersionJsonAssetPath));
