@@ -1,3 +1,4 @@
+#define USE_GITVERSION
 #if UNITY_EDITOR
 using System;
 using System.IO;
@@ -19,6 +20,14 @@ namespace kamgam.editor.GitTool
         [SerializeField]
         public string GitHashTextAssetPath;
 
+#if USE_GITVERSION
+        [SerializeField]
+        public string GitVersionJsonAssetPath;
+
+        [SerializeField]
+        public string GitVersionConfigPath;
+#endif
+
         [SerializeField]
         public bool ShowWarning;
 
@@ -29,7 +38,7 @@ namespace kamgam.editor.GitTool
             {
                 settings = ScriptableObject.CreateInstance<GitToolSettings>();
                 settings.GitHashTextAssetPath = EditorGitTool.DefaultGitHashFilePath;
-                settings.ShowWarning = true;
+                settings.ShowWarning = false;
                 AssetDatabase.CreateAsset(settings, SettingsFilePath);
                 AssetDatabase.SaveAssets();
             }
@@ -57,6 +66,10 @@ namespace kamgam.editor.GitTool
                     EditorGUILayout.PropertyField(settings.FindProperty("ShowWarning"), new GUIContent("Show warning:"));
                     EditorGUILayout.HelpBox("Should a warning be shown before building if there are uncommitted changes?", MessageType.None);
                     EditorGUILayout.PropertyField(settings.FindProperty("GitHashTextAssetPath"), new GUIContent("Hash file path:"));
+#if USE_GITVERSION
+                    EditorGUILayout.PropertyField(settings.FindProperty("GitVersionConfigPath"), new GUIContent("GitVersion config path:"));
+                    EditorGUILayout.PropertyField(settings.FindProperty("GitVersionJsonAssetPath"), new GUIContent("GitVersion json path:"));
+#endif
                     EditorGUILayout.HelpBox("Defines the path where the hash is stored as a text asset file.\n"+
                         "If you want to load this at runtime then store it in Resources, example: 'Resources/GitHash.txt'.\n"+
                         "\nLoad with :\n" +
@@ -84,11 +97,19 @@ namespace kamgam.editor.GitTool
     public static class EditorGitTool
     {
         public const string DefaultGitHashFilePath = "Resources/GitHash.txt";
+#if USE_GITVERSION
+        public const string DefaultGitVersionJsonAssetPath = "Resources/GitVersion.json";
+        public const string DefaultGitVersionConfigPath = "GitVersion.yml";
+        public static bool ShowWarning = false;
+#endif
 
 #if !UNITY_2018_4_OR_NEWER
         private static bool prefsLoaded = false;
         public static string GitHashFilePath = DefaultGitHashFilePath;
-        public static bool ShowWarning = true;
+#if USE_GITVERSION
+        public static string GitVersionJsonAssetPath = DefaultGitVersionJsonAssetPath;
+        public static string GitVersionConfigPath = DefaultGitVersionConfigPath;
+#endif
 
         [PreferenceItem("Git Tool")]
         private static void CustomPreferencesGUI()
@@ -101,6 +122,10 @@ namespace kamgam.editor.GitTool
             }
 
             GitHashFilePath = EditorGUILayout.TextField(GitHashFilePath);
+#if USE_GITVERSION
+            GitVersionConfigPath = EditorGUILayout.TextField(GitVersionConfigPath);
+            GitVersionJsonAssetPath = EditorGUILayout.TextField(GitVersionJsonAssetPath);
+#endif
             ShowWarning = EditorGUILayout.Toggle("Show Warning: ", ShowWarning);
 
             if (GUI.changed)
@@ -159,11 +184,11 @@ namespace kamgam.editor.GitTool
             File.WriteAllText(Path.Combine(Application.dataPath,
                                            gitHashFilePath),
                               gitHash);
-
-            // TODO: This cd ../.. should not be hardcoded at all.
-            Exec("cd ../.. && dotnet gitversion /output file /outputfile "
+#if USE_GITVERSION
+            Exec("gitversion /output file /outputfile "
                 + Path.Combine(Application.dataPath,
-                    "Resources/GitVersion.json"));
+                    gitVersionJsonAssetPath));
+#endif
             AssetDatabase.Refresh();
         }
 
